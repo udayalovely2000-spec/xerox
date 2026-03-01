@@ -5,22 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Asif Online Xerox</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
 body{
-font-family:'Segoe UI', sans-serif;
+font-family:'Poppins', sans-serif;
 background:#f4f7fc;
 margin:0;
 }
 
 header{
-background:linear-gradient(135deg,#0d6efd,#6610f2);
+background: linear-gradient(135deg,#0d6efd,#6610f2);
 color:white;
 padding:20px;
 text-align:center;
 font-size:22px;
-font-weight:bold;
 }
 
 .container{
@@ -28,8 +28,16 @@ max-width:500px;
 margin:20px auto;
 background:white;
 padding:20px;
-border-radius:15px;
-box-shadow:0 8px 20px rgba(0,0,0,0.08);
+border-radius:16px;
+box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+.card{
+background:#fff;
+padding:15px;
+border-radius:12px;
+box-shadow:0 4px 12px rgba(0,0,0,0.06);
+margin-top:15px;
 }
 
 input,button{
@@ -38,6 +46,7 @@ padding:12px;
 margin-top:10px;
 border-radius:8px;
 border:1px solid #ddd;
+font-size:15px;
 }
 
 button{
@@ -45,23 +54,40 @@ background:#0d6efd;
 color:white;
 border:none;
 cursor:pointer;
+transition:0.3s;
 }
 
-button:hover{background:#084298}
-
-.card{
-background:#fff;
-padding:15px;
-border-radius:12px;
-box-shadow:0 4px 12px rgba(0,0,0,0.05);
-margin-top:15px;
+button:hover{
+background:#084298;
+transform:scale(1.02);
 }
 
 .qr{text-align:center}
-.whatsapp{background:#25D366}
-.admin{margin-top:30px}
-table{width:100%;border-collapse:collapse}
-th,td{border:1px solid #ccc;padding:8px;text-align:center}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:8px;
+text-align:center;
+font-size:14px;
+}
+
+#adminPanel{display:none}
+
+.notification{
+background:#198754;
+color:white;
+padding:10px;
+border-radius:8px;
+margin-top:10px;
+text-align:center;
+}
+
 </style>
 </head>
 
@@ -69,18 +95,17 @@ th,td{border:1px solid #ccc;padding:8px;text-align:center}
 
 <header>🖨️ Asif Online Xerox Service</header>
 
+<!-- CUSTOMER PANEL -->
 <div class="container">
-
 <h3>Upload Document</h3>
 
+<div class="card">
 <input type="text" id="name" placeholder="Your Name">
 <input type="text" id="phone" placeholder="Phone Number">
 <input type="number" id="pages" placeholder="Number of Pages">
 <input type="file" id="file">
 
-<div class="card">
 <h3>Total: ₹<span id="total">0</span></h3>
-</div>
 
 <div class="qr">
 <img id="qrImage" width="200">
@@ -88,9 +113,7 @@ th,td{border:1px solid #ccc;padding:8px;text-align:center}
 
 <button onclick="payUPI()">Pay Through UPI</button>
 <button onclick="submitOrder()">Submit Order</button>
-<button class="whatsapp" onclick="sendWhatsApp()">WhatsApp Order</button>
-<button onclick="generateInvoice()">Download Invoice (PDF)</button>
-<button onclick="paymentDone()">I Have Paid</button>
+</div>
 
 </div>
 
@@ -102,51 +125,66 @@ th,td{border:1px solid #ccc;padding:8px;text-align:center}
 <p id="trackResult"></p>
 </div>
 
-<!-- ADMIN PANEL -->
-<div class="container admin">
+<!-- ADMIN LOGIN -->
+<div class="container">
 <h3>Admin Login</h3>
 <input type="email" id="adminEmail" placeholder="Admin Email">
 <input type="password" id="adminPass" placeholder="Password">
 <button onclick="adminLogin()">Login</button>
+</div>
 
-<div id="adminPanel" style="display:none;">
+<!-- ADMIN PANEL -->
+<div id="adminPanel" class="container">
+
+<div class="notification" id="notify">No New Orders</div>
+
+<h3>Dashboard</h3>
+
+<div class="card">
+<p>Total Orders: <span id="totalOrders">0</span></p>
+<p>Pending: <span id="pendingOrders">0</span></p>
+<p>Completed: <span id="completedOrders">0</span></p>
+<p>Revenue: ₹<span id="revenue">0</span></p>
+</div>
+
 <h3>Orders</h3>
 <table>
 <thead>
 <tr>
 <th>ID</th>
 <th>Name</th>
-<th>Total</th>
+<th>Phone</th>
+<th>Amount</th>
 <th>Status</th>
-<th>Update</th>
+<th>Action</th>
 </tr>
 </thead>
 <tbody id="orders"></tbody>
 </table>
-</div>
 
 </div>
 
 <script>
 
-// SUPABASE DETAILS
+// SUPABASE CONNECTION
 const supabase = supabase.createClient(
 "https://kggycninlwojlsnbhuzd.supabase.co",
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnZ3ljbmlubHdvamxzbmJodXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2NjY3NjIsImV4cCI6MjA4MjI0Mjc2Mn0.QA9ABrZ_6CvWGs4EsGKQtxyYSzknhXZztVmU5Fif5Ig"
+"YOUR_SUPABASE_ANON_KEY"
 );
 
 const pricePerPage = 5;
+let lastOrderCount = 0;
 let currentOrderID = "";
 let currentTotal = 0;
 
-// CALCULATE TOTAL
+// AUTO TOTAL
 document.getElementById("pages").addEventListener("input", function(){
 let total = this.value * pricePerPage;
 document.getElementById("total").innerText = total;
 generateQR(total);
 });
 
-// GENERATE QR
+// QR CODE
 function generateQR(amount){
 let upi = `upi://pay?pa=udayalovely2000@okaxis&pn=AsifXerox&am=${amount}&cu=INR`;
 document.getElementById("qrImage").src =
@@ -160,22 +198,25 @@ let upi = `upi://pay?pa=udayalovely2000@okaxis&pn=AsifXerox&am=${amount}&cu=INR`
 window.location.href = upi;
 }
 
-// SUBMIT ORDER (SUPABASE)
+// SUBMIT ORDER
 async function submitOrder(){
 
 let name = document.getElementById("name").value;
 let phone = document.getElementById("phone").value;
 let pages = document.getElementById("pages").value;
-let total = pages * pricePerPage;
 let file = document.getElementById("file").files[0];
 
-if(!file || !name || !phone || !pages){
+let total = pages * pricePerPage;
+currentTotal = total;
+
+if(!name || !phone || !pages || !file){
 alert("Fill all details");
 return;
 }
 
 let fileName = Date.now() + "_" + file.name;
 
+// UPLOAD FILE
 let { error } = await supabase
 .storage
 .from("order-files")
@@ -191,41 +232,24 @@ let { data } = supabase
 .from("order-files")
 .getPublicUrl(fileName);
 
+// SAVE ORDER
 let order = await supabase.from("orders").insert([{
 name:name,
 phone:phone,
 file_url:data.publicUrl,
 total_amount:total,
-order_status:"Pending"
+order_status:"Pending",
+payment_status:"Pending"
 }]).select();
 
 currentOrderID = order.data[0].id;
-currentTotal = total;
 
+// WHATSAPP MESSAGE
 let msg = `Order ID: ${currentOrderID}\nTotal: ₹${total}`;
-
 window.open("https://wa.me/919688238987?text="+encodeURIComponent(msg), "_blank");
 
-// SMS Notification (API placeholder)
-sendSMS(phone, currentOrderID);
-
 alert("Order Submitted");
-location.reload();
-}
-
-// SMS (Add your SMS API)
-function sendSMS(phone, orderId){
-console.log("SMS Sent to", phone, "Order:", orderId);
-// Use MSG91 or any SMS API here
-}
-
-// PAYMENT CONFIRMATION
-async function paymentDone(){
-await supabase.from("orders")
-.update({payment_status:"Paid"})
-.eq("id", currentOrderID);
-
-alert("Payment Confirmed");
+lastOrderCount++;
 }
 
 // TRACK ORDER
@@ -242,6 +266,7 @@ let { data } = await supabase
 if(data){
 document.getElementById("trackResult").innerHTML =
 "Status: " + data.order_status +
+"<br>Payment: " + data.payment_status +
 "<br>Total: ₹" + data.total_amount;
 }
 else{
@@ -255,18 +280,31 @@ async function adminLogin(){
 let email = document.getElementById("adminEmail").value;
 let pass = document.getElementById("adminPass").value;
 
-let { error } = await supabase.auth.signInWithPassword({
-email:email,
-password:pass
-});
-
-if(error){
+if(email === "udayalovely2000@gmail.com" && pass === "123456"){
+document.getElementById("adminPanel").style.display="block";
+loadDashboard();
+loadOrders();
+startNotification();
+}
+else{
 alert("Login Failed");
-return;
+}
 }
 
-document.getElementById("adminPanel").style.display="block";
-loadOrders();
+// DASHBOARD
+async function loadDashboard(){
+
+let { data } = await supabase.from("orders").select("*");
+
+let total = data.length;
+let pending = data.filter(o => o.order_status === "Pending").length;
+let completed = data.filter(o => o.order_status === "Completed").length;
+let revenue = data.reduce((sum,o) => sum + (o.total_amount || 0), 0);
+
+document.getElementById("totalOrders").innerText = total;
+document.getElementById("pendingOrders").innerText = pending;
+document.getElementById("completedOrders").innerText = completed;
+document.getElementById("revenue").innerText = revenue;
 }
 
 // LOAD ORDERS
@@ -281,6 +319,7 @@ html += `
 <tr>
 <td>${order.id}</td>
 <td>${order.name}</td>
+<td>${order.phone}</td>
 <td>₹${order.total_amount}</td>
 <td>${order.order_status}</td>
 <td>
@@ -300,27 +339,28 @@ document.getElementById("orders").innerHTML = html;
 // UPDATE STATUS
 async function updateStatus(id,status){
 await supabase.from("orders").update({order_status:status}).eq("id",id);
-alert("Updated");
+loadDashboard();
 loadOrders();
 }
 
-// PDF INVOICE
-function generateInvoice(){
+// NOTIFICATION
+async function startNotification(){
 
-const { jsPDF } = window.jspdf;
-const doc = new jsPDF();
+setInterval(async () => {
 
-doc.text("Asif Online Xerox Invoice", 20, 20);
-doc.text("Order ID: " + currentOrderID, 20, 40);
-doc.text("Total: ₹" + currentTotal, 20, 50);
+let { count } = await supabase
+.from("orders")
+.select("*", { count: "exact", head: true });
 
-doc.save("invoice.pdf");
+if(count > lastOrderCount){
+document.getElementById("notify").innerText = "New Order Received!";
+lastOrderCount = count;
+loadDashboard();
+loadOrders();
 }
 
-// WHATSAPP ORDER
-function sendWhatsApp(){
-let msg = "Hello, I want Xerox service.";
-window.open("https://wa.me/919688238987?text="+encodeURIComponent(msg), "_blank");
+}, 5000);
+
 }
 
 </script>
