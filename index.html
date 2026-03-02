@@ -1,348 +1,237 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Asif Online Xerox Service</title>
+<title>Udaya Digital Services</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-/* ===== BACKGROUND DESIGN ===== */
 body{
 margin:0;
-font-family:'Poppins', sans-serif;
-background:url('https://images.pexels.com/photos/7130537/pexels-photo-7130537.jpeg') center/cover fixed;
+font-family:Arial;
+background:#0f172a;
+color:white;
 }
-
-.overlay{
-background:rgba(255,255,255,0.95);
-min-height:100vh;
-padding-bottom:30px;
-}
-
-/* ===== HEADER ===== */
 header{
-background:linear-gradient(135deg,#0d6efd,#6610f2);
-color:white;
-text-align:center;
-padding:25px;
-font-size:22px;
-font-weight:bold;
-letter-spacing:0.5px;
-box-shadow:0 4px 12px rgba(0,0,0,0.2);
-}
-
-/* ===== LOGO ===== */
-.logo{
-width:90px;
-height:90px;
-border-radius:50%;
-background:white;
-display:flex;
-align-items:center;
-justify-content:center;
-margin:0 auto 10px;
-box-shadow:0 4px 12px rgba(0,0,0,0.15);
-}
-
-.logo img{
-width:65px;
-}
-
-/* ===== CONTAINER CARD ===== */
-.container{
-max-width:600px;
-margin:20px auto;
-background:white;
+background:linear-gradient(45deg,#0ea5e9,#6366f1);
 padding:20px;
-border-radius:16px;
-box-shadow:0 10px 25px rgba(0,0,0,0.12);
-transition:0.3s;
-}
-
-.container:hover{
-transform:translateY(-3px);
-}
-
-/* ===== SECTION CARD ===== */
-.card{
-background:linear-gradient(135deg,#ffffff,#f2f6ff);
-padding:15px;
-border-radius:12px;
-box-shadow:0 4px 12px rgba(0,0,0,0.08);
-margin-top:15px;
-}
-
-/* ===== INPUT & BUTTON ===== */
-input,button,textarea{
-width:100%;
-padding:12px;
-margin-top:10px;
-border-radius:8px;
-border:1px solid #ddd;
-font-size:15px;
-}
-
-button{
-background:#0d6efd;
-color:white;
-border:none;
-cursor:pointer;
-transition:0.2s;
-}
-
-button:hover{
-background:#084298;
-transform:scale(1.03);
-}
-
-/* ===== TABLE ===== */
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-}
-
-th,td{
-border:1px solid #ccc;
-padding:8px;
 text-align:center;
+font-size:24px;
+font-weight:bold;
 }
-
-/* ===== STATUS BADGES ===== */
-.status{
-padding:4px 8px;
+.container{
+max-width:900px;
+margin:auto;
+padding:20px;
+}
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:12px;
+margin-bottom:20px;
+box-shadow:0 0 15px rgba(0,0,0,0.5);
+}
+input,select{
+width:100%;
+padding:10px;
+margin:8px 0;
 border-radius:6px;
+border:none;
 }
-
-.pending{background:#fff3cd;color:#856404}
-.processing{background:#cff4fc;color:#055160}
-.paid{background:#d1e7dd;color:#0f5132}
-
-/* ===== FLOATING SUPPORT ===== */
-.floating-support{
+button{
+padding:12px;
+background:#0ea5e9;
+border:none;
+color:white;
+width:100%;
+border-radius:8px;
+cursor:pointer;
+}
+button:hover{background:#0284c7;}
+.whatsapp{
 position:fixed;
 bottom:20px;
 right:20px;
 background:#25D366;
 color:white;
-padding:12px 18px;
-border-radius:50px;
-box-shadow:0 4px 12px rgba(0,0,0,0.2);
-cursor:pointer;
-font-weight:bold;
-z-index:1000;
+padding:15px;
+border-radius:50%;
+text-decoration:none;
 }
-
-.floating-support:hover{
-transform:scale(1.05);
-}
-
-/* ===== RESPONSIVE ===== */
-@media(max-width:600px){
-.container{
-margin:10px;
-}
-}
+.admin-panel{display:none;}
 </style>
 </head>
-
 <body>
 
-<div class="overlay">
-
 <header>
-<div class="logo">
-<img src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png">
-</div>
-🖨️ Asif Online Xerox Service
+Udaya Digital Services  
+<br>
+<small>Online Xerox | Print | Lamination</small>
 </header>
 
-<!-- CUSTOMER PANEL -->
-<div id="customerPanel" class="container">
-<h3>Upload Document & Photos</h3>
+<div class="container">
+
+<div class="card">
+<h2>Place Order</h2>
 
 <input type="text" id="name" placeholder="Your Name">
 <input type="text" id="phone" placeholder="Phone Number">
 
-<!-- AUTOMATIC CALC -->
-<div class="card">
-<input type="number" id="pages" placeholder="Number of Pages">
-<input type="number" id="copies" placeholder="Number of Copies" value="1">
+<select id="service">
+<option value="Xerox">Xerox (₹2 per copy)</option>
+<option value="Printout">Printout (₹5 per copy)</option>
+<option value="Lamination">Lamination (₹20 per copy)</option>
+</select>
 
-<h3>Total Pages: <span id="totalPages">0</span></h3>
-<h3>Total Amount: ₹<span id="total">0</span></h3>
-</div>
+<input type="number" id="copies" placeholder="Number of Copies" value="1" oninput="calculateAmount()">
+<input type="text" id="amount" placeholder="Total Amount" readonly>
 
-<h4>Upload Multiple Files</h4>
+<label>Upload Files (Multiple Allowed)</label>
 <input type="file" id="files" multiple>
-<p id="fileCount"></p>
 
-<!-- UPI PAYMENT -->
+<button onclick="placeOrder()">Submit & Pay via UPI</button>
+
+<p>UPI: <b>udayalovely2000@okaxis</b></p>
+</div>
+
 <div class="card">
-<h4>Pay via UPI</h4>
-<img id="qrImage" width="180">
-<button onclick="payUPI()">Pay via UPI</button>
-<button onclick="paymentDone()">I Have Paid</button>
-</div>
-
-<p id="paymentStatus">Payment Status: Pending</p>
-
-<!-- WHATSAPP ORDER -->
-<button onclick="orderWhatsApp()">Order via WhatsApp</button>
-
-<!-- CUSTOMER SUPPORT -->
-<div class="card">
-<h4>Customer Support</h4>
-<textarea id="supportMsg" placeholder="Describe your issue"></textarea>
-<button onclick="sendSupport()">Send Message</button>
-<p id="supportResult"></p>
-</div>
-
-</div>
-
-<!-- TRACK ORDER -->
-<div class="container">
-<h3>Track Order</h3>
-<input type="text" id="trackId" placeholder="Order ID">
+<h2>Track Order</h2>
+<input type="text" id="trackPhone" placeholder="Enter Phone Number">
 <button onclick="trackOrder()">Track</button>
-<p id="trackResult"></p>
+<div id="trackResult"></div>
 </div>
 
-<!-- ADMIN LOGIN -->
-<div class="container" id="loginPanel">
-<h3>Admin Login</h3>
-<input type="email" id="adminEmail" placeholder="Admin Email">
+<div class="card">
+<h2>Admin Login</h2>
+<input type="email" id="adminEmail" placeholder="Email">
 <input type="password" id="adminPass" placeholder="Password">
 <button onclick="adminLogin()">Login</button>
-<p id="loginMsg"></p>
 </div>
 
-<!-- ADMIN PANEL -->
-<div id="adminPanel" class="container">
-
-<h3>Admin Dashboard</h3>
-
-<div class="card">
-<p>Total Orders: <span id="totalOrders">0</span></p>
-<p>Pending Payments: <span id="pendingOrders">0</span></p>
-<p>Paid: <span id="paidOrders">0</span></p>
-</div>
-
-<h3>Orders</h3>
-<table>
-<thead>
-<tr>
-<th>ID</th>
-<th>Name</th>
-<th>Amount</th>
-<th>Payment</th>
-<th>Status</th>
-<th>Invoice</th>
-</tr>
-</thead>
-<tbody id="orders"></tbody>
-</table>
-
-<button onclick="logout()">Logout</button>
+<div class="card admin-panel" id="adminPanel">
+<h2>Admin Dashboard</h2>
+<div id="ordersList"></div>
 </div>
 
 </div>
 
-<!-- FLOATING SUPPORT -->
-<div class="floating-support" onclick="openSupport()">
-💬 Support
-</div>
+<a class="whatsapp" href="https://wa.me/919688238987" target="_blank">💬</a>
 
 <script>
 
-// PRICE PER PAGE
-const pricePerPage = 5;
+const supabase = window.supabase.createClient(
+"https://kggycninlwojlsnbhuzd.supabase.co",
+"YOUR_NEW_ANON_KEY"
+);
 
-// AUTO CALCULATION
-function calculate(){
-let pages = parseInt(document.getElementById("pages").value) || 0;
-let copies = parseInt(document.getElementById("copies").value) || 1;
-
-let totalPages = pages * copies;
-let amount = totalPages * pricePerPage;
-
-document.getElementById("totalPages").innerText = totalPages;
-document.getElementById("total").innerText = amount;
-
-generateQR(amount);
+function calculateAmount(){
+const service=document.getElementById("service").value;
+const copies=parseInt(document.getElementById("copies").value)||1;
+let price=2;
+if(service==="Printout") price=5;
+if(service==="Lamination") price=20;
+document.getElementById("amount").value=price*copies;
 }
 
-// EVENTS
-document.getElementById("pages").addEventListener("input", calculate);
-document.getElementById("copies").addEventListener("input", calculate);
+async function placeOrder(){
 
-// FILE COUNT
-document.getElementById("files").addEventListener("change", function(){
-document.getElementById("fileCount").innerText =
-this.files.length + " file(s) selected";
+const name=document.getElementById("name").value;
+const phone=document.getElementById("phone").value;
+const service=document.getElementById("service").value;
+const copies=document.getElementById("copies").value;
+const amount=document.getElementById("amount").value;
+const files=document.getElementById("files").files;
+
+let uploadedUrls=[];
+
+for(let file of files){
+const fileName=Date.now()+"_"+file.name;
+
+await supabase.storage
+.from("order-files")
+.upload(fileName,file);
+
+const { data }=supabase.storage
+.from("order-files")
+.getPublicUrl(fileName);
+
+uploadedUrls.push(data.publicUrl);
+}
+
+await supabase.from("orders").insert([{
+customer_name:name,
+phone:phone,
+service:service,
+copies:copies,
+amount:amount,
+payment_status:"Pending",
+order_status:"New",
+file_urls:uploadedUrls
+}]);
+
+window.location.href="upi://pay?pa=udayalovely2000@okaxis&pn=UdayaDigital&am="+amount;
+}
+
+async function trackOrder(){
+const phone=document.getElementById("trackPhone").value;
+const {data}=await supabase.from("orders").select("*").eq("phone",phone);
+
+let html="";
+data.forEach(order=>{
+html+=`
+<div style="background:#334155;padding:10px;margin:10px 0;border-radius:8px">
+<p><b>Service:</b> ${order.service}</p>
+<p><b>Copies:</b> ${order.copies}</p>
+<p><b>Amount:</b> ₹${order.amount}</p>
+<p><b>Status:</b> ${order.order_status}</p>
+<p><b>Payment:</b> ${order.payment_status}</p>
+</div>`;
 });
-
-// GENERATE QR
-function generateQR(amount){
-let upi = `upi://pay?pa=udayalovely2000@okaxis&pn=XeroxService&am=${amount}&cu=INR`;
-document.getElementById("qrImage").src =
-"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" + encodeURIComponent(upi);
+document.getElementById("trackResult").innerHTML=html;
 }
 
-// UPI PAYMENT
-function payUPI(){
-let amount = document.getElementById("total").innerText;
-let upi = `upi://pay?pa=udayalovely2000@okaxis&pn=XeroxService&am=${amount}&cu=INR`;
-window.location.href = upi;
+function adminLogin(){
+if(
+document.getElementById("adminEmail").value==="udayalovely2000@gmail.com" &&
+document.getElementById("adminPass").value==="123456"
+){
+document.getElementById("adminPanel").style.display="block";
+loadOrders();
+}else{
+alert("Invalid Login");
+}
 }
 
-// PAYMENT CONFIRMATION
-function paymentDone(){
-document.getElementById("paymentStatus").innerText =
-"Payment Status: Paid (Awaiting Admin Confirmation)";
+async function loadOrders(){
+const {data}=await supabase.from("orders").select("*").order("created_at",{ascending:false});
+
+let html="";
+data.forEach(order=>{
+html+=`
+<div style="background:#334155;padding:10px;margin:10px 0;border-radius:8px">
+<p><b>Name:</b> ${order.customer_name}</p>
+<p><b>Phone:</b> ${order.phone}</p>
+<p><b>Service:</b> ${order.service}</p>
+<p><b>Copies:</b> ${order.copies}</p>
+<p><b>Amount:</b> ₹${order.amount}</p>
+<p><b>Status:</b> ${order.order_status}</p>
+<p><b>Payment:</b> ${order.payment_status}</p>
+<button onclick="updateStatus('${order.id}','Completed')">Mark Completed</button>
+<hr>
+</div>`;
+});
+document.getElementById("ordersList").innerHTML=html;
 }
 
-// WHATSAPP ORDER
-function orderWhatsApp(){
-
-let name = document.getElementById("name").value;
-let phone = document.getElementById("phone").value;
-let total = document.getElementById("total").innerText;
-
-let message =
-`Hello, I want Xerox service.\n\nName: ${name}\nPhone: ${phone}\nAmount: ₹${total}\n\nPlease confirm order.`;
-
-let url = "https://wa.me/919688238987?text=" + encodeURIComponent(message);
-window.open(url, "_blank");
+async function updateStatus(id,status){
+await supabase.from("orders").update({order_status:status}).eq("id",id);
+loadOrders();
 }
 
-// CUSTOMER SUPPORT
-function sendSupport(){
-let msg = document.getElementById("supportMsg").value;
-if(!msg){
-alert("Enter message");
-return;
-}
-
-document.getElementById("supportResult").innerText =
-"Support message sent. We will contact you soon.";
-
-let url = "https://wa.me/919688238987?text=" + encodeURIComponent("Support: " + msg);
-window.open(url, "_blank");
-}
-
-// OPEN SUPPORT
-function openSupport(){
-let url = "https://wa.me/919688238987";
-window.open(url, "_blank");
-}
-
-// OTHER FUNCTIONS (YOUR ORIGINAL CODE WORKS HERE)
+calculateAmount();
 
 </script>
-
 </body>
 </html>
